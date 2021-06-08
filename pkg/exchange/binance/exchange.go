@@ -3,6 +3,8 @@ package binance
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -43,6 +45,16 @@ type Exchange struct {
 
 func New(key, secret string) *Exchange {
 	var client = binance.NewClient(key, secret)
+	var proxyURL = "socks5://127.0.0.1:7890"
+	proxyURL_, _ := url.Parse(proxyURL)
+
+	//adding the proxy settings to the Transport object
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL_),
+	}
+
+	//adding the Transport object to the http Client
+	client.HTTPClient.Transport = transport
 	_, _ = client.NewSetServerTimeService().Do(context.Background())
 	return &Exchange{
 		key:    key,
